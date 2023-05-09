@@ -173,3 +173,59 @@ function segregating_denovo(s) {
   // there's a mendelian violation
   return ("mom" in s) && ("dad" in s)
 }
+
+// Custom TRGT filters
+
+// TODO:
+// - Need to sort alleles before comparing?
+// - Function for X chrom
+
+function denovo_str_exact(kid, mom, dad){
+  // check genotypes match expected pattern
+  // Doesn't work. Can't find GT??
+  validkid1 = [mom.GT[0], dad.GT[1]]
+  validkid2 = [dad.GT[0], mom.GT[1]]
+  if(kid.GT == validkid1){ return false; }
+  if(kid.GT == validkid2){ return false; }
+  return true
+}
+
+// Return true if allele lengths don't match mendelian expections (i.e. de novo)
+function denovo_str_len_strict(kid, mom, dad){
+  // Require min number supporting reads in all individuals
+  // What about support for specific, or just alt alleles?
+  minsupport = 2
+  if(mom.SD[0] < minsupport || dad.SD[0] < minsupport || kid.SD[0] < minsupport){ return false; }
+  if(mom.SD[1] < minsupport || dad.SD[1] < minsupport || kid.SD[1] < minsupport){ return false; }
+  validkid1 = [mom.AL[0], dad.AL[1]]
+  validkid2 = [dad.AL[0], mom.AL[1]]
+  if(kid.AL[0] == validkid1[0] && kid.AL[1] == validkid1[1]){ return false; }
+  if(kid.AL[0] == validkid2[0] && kid.AL[1] == validkid2[1]){ return false; }
+  return true
+}
+
+// Return true if allele lengths match mendelian expections
+function concordant_str_len_exact(kid, mom, dad){
+  // Require min number supporting reads in all individuals
+  minsupport = 2
+  if(mom.SD[0] < minsupport || dad.SD[0] < minsupport || kid.SD[0] < minsupport){ return false; }
+  if(mom.SD[1] < minsupport || dad.SD[1] < minsupport || kid.SD[1] < minsupport){ return false; }
+  validkid1 = [mom.AL[0], dad.AL[1]]
+  validkid2 = [dad.AL[0], mom.AL[1]]
+  if(kid.AL[0] == validkid1[0] && kid.AL[1] == validkid1[1]){ return true; }
+  if(kid.AL[0] == validkid2[0] && kid.AL[1] == validkid2[1]){ return true; }
+  return false
+}
+
+// Return true if allele lengths match mendelian expections, but allowing for up to wiggle bp difference
+function concordant_str_len_similar(kid, mom, dad, wiggle){
+  // Require min number supporting reads in all individuals
+  minsupport = 2
+  if(mom.SD[0] < minsupport || dad.SD[0] < minsupport || kid.SD[0] < minsupport){ return false; }
+  if(mom.SD[1] < minsupport || dad.SD[1] < minsupport || kid.SD[1] < minsupport){ return false; }
+  validkid1 = [mom.AL[0], dad.AL[1]]
+  validkid2 = [dad.AL[0], mom.AL[1]]
+  if(Math.abs(kid.AL[0] - validkid1[0]) <= wiggle && Math.abs(kid.AL[1] - validkid1[1]) <= wiggle){ return true; }
+  if(Math.abs(kid.AL[0] - validkid1[0]) <= wiggle && Math.abs(kid.AL[1] - validkid1[1]) <= wiggle){ return true; }
+  return false
+}
